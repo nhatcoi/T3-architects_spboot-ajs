@@ -1,7 +1,9 @@
 package org.example.shopapp.services.serviceImpl;
 
 import org.example.shopapp.dtos.ProductDTO;
+import org.example.shopapp.dtos.ProductImageDTO;
 import org.example.shopapp.entities.Product;
+import org.example.shopapp.entities.ProductImage;
 import org.example.shopapp.exceptions.DataNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,4 +18,5 @@ public interface ProductServiceImpl {
     List<Product> getAllProducts();
     Page<Product> getAllProducts(PageRequest pageRequest);
     boolean isProductExist(Long id);
+    ProductImage createProductImage(Long productId, ProductImageDTO productImageDTO) throws DataNotFoundException;
 }

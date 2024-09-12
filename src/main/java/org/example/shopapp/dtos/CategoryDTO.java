@@ -12,7 +12,4 @@ import org.example.shopapp.entities.Category;
 public class CategoryDTO {
     @NotEmpty(message = "Name is required")
     private String name;
-
-
-
 }

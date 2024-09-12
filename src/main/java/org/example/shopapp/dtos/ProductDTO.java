@@ -28,8 +28,8 @@ public class ProductDTO {
 
     // mapping the category_id field from the request body to categoryId field in the ProductDTO class
     @JsonProperty("category_id")
-    private Long categoryId;
+    private long categoryId;
 
-    private MultipartFile file;
-    private List<MultipartFile> files;
+//    private MultipartFile file;
+//    private List<MultipartFile> files;
 }

@@ -1,4 +1,4 @@
-package org.example.shopapp.enums;
+package org.example.shopapp.common;
 
 public enum OrderStatus {
     PENDING("Order is pending."),        // Đơn hàng đang chờ xử lý

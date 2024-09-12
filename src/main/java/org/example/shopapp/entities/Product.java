@@ -3,10 +3,8 @@ package org.example.shopapp.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Data
 @Getter
 @Setter
@@ -36,4 +34,7 @@ public class Product extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category categoryId;
+
+
+
 }

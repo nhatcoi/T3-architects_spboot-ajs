@@ -8,6 +8,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ProductImageDTO {
     @JsonProperty("product_id")
     private Long productId;

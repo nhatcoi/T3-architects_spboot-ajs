@@ -1,4 +1,4 @@
-package org.example.shopapp.enums;
+package org.example.shopapp.common;
 
 public enum Role {
     ADMIN("Admin"),

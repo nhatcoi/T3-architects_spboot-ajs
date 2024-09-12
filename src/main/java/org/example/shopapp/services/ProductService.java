@@ -33,7 +33,7 @@ public class ProductService implements ProductServiceImpl {
         Product newProduct = Product.builder()
                 .name(productDTO.getName())
                 .price(productDTO.getPrice())
-                .thumbnail(productDTO.getThumbnail())
+                .description(productDTO.getDescription())
                 .categoryId(cate)
                 .build();
         return productRepository.save(newProduct);
@@ -58,7 +58,6 @@ public class ProductService implements ProductServiceImpl {
 
     @Override
     public void deleteProduct(Long id) {
-
         productRepository.deleteById(id);
     }
 
@@ -83,14 +82,29 @@ public class ProductService implements ProductServiceImpl {
         return false;
     }
 
-    private ProductImage createProductImage(Long productId, ProductImageDTO productImageDTO) throws DataNotFoundException {
+    @Override
+    public ProductImage createProductImage(Long productId, ProductImageDTO productImageDTO) throws DataNotFoundException {
         Product existingProduct = productRepository
                 .findById(productImageDTO.getProductId())
                 .orElseThrow(() -> new DataNotFoundException
                         ("Product not found with id: " + productImageDTO.getProductId()));
+        // not insert more than 5 images for a product
+        deleteOldImagesIfExceedsLimit(productId);
+        return saveProductImage(existingProduct, productImageDTO.getImageUrl());
+    }
+
+
+    private void deleteOldImagesIfExceedsLimit(Long productId) {
+        productImageRepository.findByProductId(productId)
+                .stream()
+                .limit(5)
+                .forEach(productImageRepository::delete);
+    }
+
+    private ProductImage saveProductImage(Product product, String imageUrl) {
         ProductImage newProductImage = ProductImage.builder()
-                .product(existingProduct)
-                .imageUrl(productImageDTO.getImageUrl())
+                .product(product)
+                .imageUrl(imageUrl)
                 .build();
         return productImageRepository.save(newProductImage);
     }

@@ -5,6 +5,10 @@ import java.nio.file.Path;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.shopapp.dtos.ProductDTO;
+import org.example.shopapp.dtos.ProductImageDTO;
+import org.example.shopapp.entities.Product;
+import org.example.shopapp.entities.ProductImage;
+import org.example.shopapp.exceptions.DataNotFoundException;
 import org.example.shopapp.services.ProductService;
 import org.example.shopapp.services.serviceImpl.ProductServiceImpl;
 import org.example.shopapp.utils.File;
@@ -20,10 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("api/v1/products")
@@ -32,24 +33,8 @@ public class ProductController {
     private final ProductServiceImpl productService;
 
 
-    @GetMapping("")
-    public ResponseEntity<?> getProducts(
-            @RequestParam(value = "page") int page,
-            @RequestParam(value = "limit") int limit
-    ) {
-        return ResponseEntity.ok("Get all products");
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(@PathVariable("id") Long productId) {
-        return ResponseEntity.ok("Get product : " + productId);
-    }
-
-    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> insertProduct(
-            @Valid @ModelAttribute ProductDTO productDTO,
-            BindingResult result
-    ) {
+    @PostMapping("")
+    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductDTO productDTO, BindingResult result) {
         try {
             if (result.hasErrors()) {
                 List<String> errors = result.getFieldErrors().stream()
@@ -58,24 +43,45 @@ public class ProductController {
                 return ResponseEntity.badRequest().body(errors.toString());
             }
 
-            List<MultipartFile> files = Optional.ofNullable(productDTO.getFiles()).orElse(List.of());
+            // create product
+            Product newProduct = productService.createProduct(productDTO);
+            return ResponseEntity.ok().body(newProduct);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImage(@PathVariable("id") Long productId  , @ModelAttribute("files") List<MultipartFile> files) {
+        try {
+            // handle image upload
+            Product existingProduct = productService.getProductById(productId);
+            files = files == null ? List.of() : files;
+            List<ProductImage> productImages = new ArrayList<>();
             for (MultipartFile file : files) {
+                // Kiểm tra kích thước file
                 if (!processFile(file)) {
                     return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                             .body("File size is too large! (max: 10MB)");
                 }
+                // Kiểm tra định dạng file
                 if (!isImage(file)) {
                     return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                             .body("Unsupported media type! (only support image)");
                 }
+                // save file
                 String filename = File.storeFile(file);
+                // save image to database
+                ProductImage productImage = productService.createProductImage(existingProduct.getId(), ProductImageDTO
+                        .builder()
+                        .productId(existingProduct.getId())
+                        .imageUrl(filename)
+                        .build());
+                productImages.add(productImage);
             }
-
-            productService.createProduct(productDTO);
-
-            return ResponseEntity.ok("Insert product : " + productDTO);
+            return ResponseEntity.ok().body(productImages);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -88,6 +94,18 @@ public class ProductController {
         return contentType != null && contentType.startsWith("image/");
     }
 
+    @GetMapping("")
+    public ResponseEntity<?> getProducts(
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "limit") int limit)
+    {
+        return ResponseEntity.ok("Get all products");
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable("id") Long productId) {
+        return ResponseEntity.ok("Get product : " + productId);
+    }
 
 
     @PutMapping("/{id}")
