@@ -1,29 +1,27 @@
 package org.example.shopapp.controllers;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.shopapp.dtos.ProductDTO;
+import org.example.shopapp.dtos.ProductRequest;
 import org.example.shopapp.dtos.ProductImageDTO;
+import org.example.shopapp.dtos.responses.ProductResponse;
 import org.example.shopapp.entities.Product;
 import org.example.shopapp.entities.ProductImage;
-import org.example.shopapp.exceptions.DataNotFoundException;
-import org.example.shopapp.services.ProductService;
 import org.example.shopapp.services.serviceImpl.ProductServiceImpl;
 import org.example.shopapp.utils.File;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @RestController
@@ -31,10 +29,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductServiceImpl productService;
+    private final ModelMapper modelMapper;
 
 
     @PostMapping("")
-    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductDTO productDTO, BindingResult result) {
+    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductRequest productRequest, BindingResult result) {
         try {
             if (result.hasErrors()) {
                 List<String> errors = result.getFieldErrors().stream()
@@ -44,8 +43,11 @@ public class ProductController {
             }
 
             // create product
-            Product newProduct = productService.createProduct(productDTO);
-            return ResponseEntity.ok().body(newProduct);
+            Product newProduct = productService.createProduct(productRequest);
+
+            // response data to client
+            ProductResponse productResponse = modelMapper.map(newProduct, ProductResponse.class);
+            return ResponseEntity.ok().body(productResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -99,7 +101,16 @@ public class ProductController {
             @RequestParam(value = "page") int page,
             @RequestParam(value = "limit") int limit)
     {
-        return ResponseEntity.ok("Get all products");
+        PageRequest pageRequest = PageRequest.of(
+                page, limit,
+                Sort.by("createdAt").descending());
+        Page<Product> productPage = productService.getAllProducts(pageRequest);
+        // get all number of page
+        int totalPages = productPage.getTotalPages();
+        List<ProductResponse> productResponses = productPage.getContent().stream()
+                .map(product -> modelMapper.map(product, ProductResponse.class))
+                .toList();
+        return ResponseEntity.ok().body(productResponses);
     }
 
     @GetMapping("/{id}")

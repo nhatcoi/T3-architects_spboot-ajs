@@ -6,16 +6,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Data
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDTO {
+public class ProductRequest {
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String name;

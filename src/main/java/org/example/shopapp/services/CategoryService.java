@@ -1,10 +1,12 @@
 package org.example.shopapp.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.shopapp.dtos.CategoryDTO;
+import org.example.shopapp.dtos.CategoryRequest;
+import org.example.shopapp.dtos.responses.CategoryResponse;
 import org.example.shopapp.entities.Category;
 import org.example.shopapp.reposistories.CategoryRepository;
 import org.example.shopapp.services.serviceImpl.CategoryServiceImpl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,22 +19,22 @@ public class CategoryService implements CategoryServiceImpl {
     // @RequiredArgsConstructor: tạo constructor khi có final field
 
     @Override
-    public Category createCategory(CategoryDTO categoryDTO) {
+    public Category createCategory(CategoryRequest categoryRequest) {
         Category newCategory = Category.builder()
-                .name(categoryDTO.getName())
+                .name(categoryRequest.getName())
                 .build();
         return categoryRepository.save(newCategory);
     }
 
     @Override
-    public Category updateCategory(Long id, CategoryDTO categoryDTO) {
+    public Category updateCategory(Long id, CategoryRequest categoryRequest) {
         Category categoryToUpdate = getCategoryById(id);
-        categoryToUpdate.setName(categoryDTO.getName());
+        categoryToUpdate.setName(categoryRequest.getName());
         return categoryRepository.save(categoryToUpdate);
     }
 
     @Override
-    public void deleteCategory(Long id) {
+    public void deleteCategoryById(Long id) {
         // xoá cứng
         categoryRepository.deleteById(id);
     }

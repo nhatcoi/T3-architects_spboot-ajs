@@ -1,8 +1,7 @@
 package org.example.shopapp.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.shopapp.dtos.CategoryDTO;
-import org.example.shopapp.dtos.ProductDTO;
+import org.example.shopapp.dtos.ProductRequest;
 import org.example.shopapp.dtos.ProductImageDTO;
 import org.example.shopapp.entities.Category;
 import org.example.shopapp.entities.Product;
@@ -26,32 +25,32 @@ public class ProductService implements ProductServiceImpl {
     private final ProductImageRepository productImageRepository;
 
     @Override
-    public Product createProduct(ProductDTO productDTO) throws DataNotFoundException {
+    public Product createProduct(ProductRequest productRequest) throws DataNotFoundException {
         Category cate = categoryRepository
-                .findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new DataNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
+                .findById(productRequest.getCategoryId())
+                .orElseThrow(() -> new DataNotFoundException("Category not found with id: " + productRequest.getCategoryId()));
         Product newProduct = Product.builder()
-                .name(productDTO.getName())
-                .price(productDTO.getPrice())
-                .description(productDTO.getDescription())
+                .name(productRequest.getName())
+                .price(productRequest.getPrice())
+                .description(productRequest.getDescription())
                 .categoryId(cate)
                 .build();
         return productRepository.save(newProduct);
     }
 
     @Override
-    public Product updateProduct(Long id, ProductDTO productDTO) throws DataNotFoundException {
+    public Product updateProduct(Long id, ProductRequest productRequest) throws DataNotFoundException {
         Product productToUpdate = getProductById(id);
         assert productToUpdate != null;
         // copy data from productDTO to productToUpdate
         // co the su dung ModelMapper
         productToUpdate = Product.builder()
                 .id(id)
-                .name(productDTO.getName())
-                .price(productDTO.getPrice())
-                .thumbnail(productDTO.getThumbnail())
-                .categoryId(categoryRepository.findById(productDTO.getCategoryId())
-                        .orElseThrow(() -> new DataNotFoundException("Category not found with id: " + productDTO.getCategoryId())))
+                .name(productRequest.getName())
+                .price(productRequest.getPrice())
+                .thumbnail(productRequest.getThumbnail())
+                .categoryId(categoryRepository.findById(productRequest.getCategoryId())
+                        .orElseThrow(() -> new DataNotFoundException("Category not found with id: " + productRequest.getCategoryId())))
                 .build();
         return productRepository.save(productToUpdate);
     }
@@ -73,7 +72,7 @@ public class ProductService implements ProductServiceImpl {
 
     @Override
     public Page<Product> getAllProducts(PageRequest pageRequest) {
-        // get all products with page and limit
+        // Retrieve all products with pagination
         return productRepository.findAll(pageRequest);
     }
 

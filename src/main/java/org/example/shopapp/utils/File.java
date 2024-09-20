@@ -31,6 +31,4 @@ public class File {
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         return uniqueFileName;
     }
-
-
 }
