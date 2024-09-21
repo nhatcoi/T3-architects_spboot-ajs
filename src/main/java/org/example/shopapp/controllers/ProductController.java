@@ -1,12 +1,16 @@
 package org.example.shopapp.controllers;
 
+//import com.github.javafaker.Faker;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.datafaker.Faker;
 import org.example.shopapp.dtos.ProductRequest;
 import org.example.shopapp.dtos.ProductImageDTO;
+import org.example.shopapp.dtos.responses.ProductListResponse;
 import org.example.shopapp.dtos.responses.ProductResponse;
 import org.example.shopapp.entities.Product;
 import org.example.shopapp.entities.ProductImage;
+import org.example.shopapp.exceptions.DataNotFoundException;
 import org.example.shopapp.services.serviceImpl.ProductServiceImpl;
 import org.example.shopapp.utils.File;
 import org.modelmapper.ModelMapper;
@@ -110,23 +114,65 @@ public class ProductController {
         List<ProductResponse> productResponses = productPage.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductResponse.class))
                 .toList();
-        return ResponseEntity.ok().body(productResponses);
+
+        return ResponseEntity.ok().body(ProductListResponse.builder()
+                .products(productResponses)
+                .totalPage(totalPages)
+                .build());
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(@PathVariable("id") Long productId) {
-        return ResponseEntity.ok("Get product : " + productId);
+    public ResponseEntity<?> getProductById(@PathVariable("id") Long productId) throws DataNotFoundException {
+        Product product = productService.getProductById(productId);
+        ProductResponse productResponse = modelMapper.map(product, ProductResponse.class);
+        return ResponseEntity.ok().body(productResponse);
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable("id") Long id) {
-        return ResponseEntity.ok("Update product : " + id);
+    public ResponseEntity<?> updateProduct(@PathVariable("id") Long productId, @RequestBody ProductRequest productRequest) {
+        // request to entity to db
+        Product updatedProduct;
+        try {
+            updatedProduct = productService.updateProduct(productId, productRequest);
+        } catch (DataNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // entity to response
+        ProductResponse productResponse = modelMapper.map(updatedProduct, ProductResponse.class);
+        return ResponseEntity.ok().body(productResponse);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable("id") Long id) {
-        return ResponseEntity.ok("Delete product : " + id);
+    public ResponseEntity<?> deleteProduct(@PathVariable("id") Long productId) throws DataNotFoundException {
+        Product product = productService.getProductById(productId);
+        productService.deleteProduct(productId);
+        ProductResponse productResponse = modelMapper.map(product, ProductResponse.class);
+        productService.deleteProduct(productId);
+        return ResponseEntity.ok("Delete product : " + productResponse);
+    }
+
+
+    // Task data faker
+    @PostMapping("/generateFakeProducts")
+    public ResponseEntity<?> generateFakeProducts()  {
+        Faker faker = new Faker();
+        for (int i = 0; i < 100000; i++) {
+            ProductRequest productRequest = ProductRequest.builder()
+                    .name(faker.commerce().productName())
+                    .price((float)faker.number().randomDouble(2, 1, 1000))
+                    .description(faker.lorem().sentence())
+                    .categoryId(faker.number().numberBetween(1, 26))
+                    .build();
+            try {
+                productService.createProduct(productRequest);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok("Generate fake products successfully");
     }
 
 }
