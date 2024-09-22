@@ -55,11 +55,14 @@ public class Order {
     @Column(name = "shipping_date")
     private LocalDateTime shippingDate;
 
-    @Column(name = "tracking_number", length = 50)
+    @Column(name = "tracking_number")
     private String trackingNumber;
 
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
+
+    @Column(name = "payment_date", length = 50)
+    private LocalDateTime paymentDate;
 
     @Column(name = "active")
     private boolean active;

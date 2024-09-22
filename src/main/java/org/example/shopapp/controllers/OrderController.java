@@ -2,8 +2,13 @@ package org.example.shopapp.controllers;
 
 
 import jakarta.validation.Valid;
-import org.example.shopapp.dtos.OrderDTO;
-import org.example.shopapp.dtos.UserDTO;
+import lombok.RequiredArgsConstructor;
+import org.example.shopapp.dtos.OrderRequest;
+import org.example.shopapp.dtos.responses.OrderResponse;
+import org.example.shopapp.entities.Order;
+import org.example.shopapp.services.serviceImpl.OrderServiceImpl;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -13,9 +18,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("${api.prefix}/orders")
+@RequiredArgsConstructor
 public class OrderController {
+    private final OrderServiceImpl orderService;
+    private final ModelMapper modelMapper;
+
     @PostMapping("")
-    public ResponseEntity<?> insertOrder(@Valid @RequestBody OrderDTO orderDTO, BindingResult result) {
+    public ResponseEntity<?> insertOrder(@Valid @RequestBody OrderRequest orderRequest, BindingResult result) {
         try {
             if(result.hasErrors()) {
                 List<String> errors = result.getFieldErrors().stream()
@@ -23,7 +32,13 @@ public class OrderController {
                         .toList();
                 return ResponseEntity.badRequest().body(errors.toString());
             }
-            return ResponseEntity.ok("Insert order successfully: " + orderDTO);
+
+            // create order
+            Order order = orderService.createOrder(orderRequest);
+
+            // entity to response
+            OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
+            return ResponseEntity.ok().body(orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -34,8 +49,9 @@ public class OrderController {
     @GetMapping("/{user_id}")
     public ResponseEntity<?> getOrders(@Valid @PathVariable("user_id") Long userId) {
         try {
-            //
-            return ResponseEntity.ok("Get all orders of user: " + userId);
+            OrderResponse orderResponse = modelMapper
+                    .map(orderService.getOrderById(userId), OrderResponse.class);
+            return ResponseEntity.ok().body(orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -43,9 +59,11 @@ public class OrderController {
 
     // Update info pf an order -- job of admin
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrder(@Valid @PathVariable("id") Long id, @RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<?> updateOrder(@Valid @PathVariable("id") Long orderId, @RequestBody OrderRequest orderRequest) {
         try {
-            return ResponseEntity.ok("Update order successfully: " + id + " " + orderDTO);
+            Order orderUpdated = orderService.updateOrder(orderId, orderRequest);
+            OrderResponse orderResponse = modelMapper.map(orderUpdated, OrderResponse.class);
+            return ResponseEntity.ok().body(orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -55,11 +73,12 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrder(@Valid @PathVariable("id") Long orderId) {
         try {
-            return ResponseEntity.ok("Delete order successfully: " + orderId);
+            OrderResponse orderResponse = modelMapper
+                    .map(orderService.getOrderById(orderId), OrderResponse.class);
+            orderService.deleteOrder(orderId);
+            return ResponseEntity.ok("Deleted order: " + orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
 }

@@ -137,7 +137,7 @@ public class ProductController {
         try {
             updatedProduct = productService.updateProduct(productId, productRequest);
         } catch (DataNotFoundException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         // entity to response
@@ -156,23 +156,23 @@ public class ProductController {
 
 
     // Task data faker
-    @PostMapping("/generateFakeProducts")
-    public ResponseEntity<?> generateFakeProducts()  {
-        Faker faker = new Faker();
-        for (int i = 0; i < 100000; i++) {
-            ProductRequest productRequest = ProductRequest.builder()
-                    .name(faker.commerce().productName())
-                    .price((float)faker.number().randomDouble(2, 1, 1000))
-                    .description(faker.lorem().sentence())
-                    .categoryId(faker.number().numberBetween(1, 26))
-                    .build();
-            try {
-                productService.createProduct(productRequest);
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().body(e.getMessage());
-            }
-        }
-        return ResponseEntity.ok("Generate fake products successfully");
-    }
+//    @PostMapping("/generateFakeProducts")
+//    public ResponseEntity<?> generateFakeProducts()  {
+//        Faker faker = new Faker();
+//        for (int i = 0; i < 100000; i++) {
+//            ProductRequest productRequest = ProductRequest.builder()
+//                    .name(faker.commerce().productName())
+//                    .price((float)faker.number().randomDouble(2, 1, 1000))
+//                    .description(faker.lorem().sentence())
+//                    .categoryId(faker.number().numberBetween(1, 26))
+//                    .build();
+//            try {
+//                productService.createProduct(productRequest);
+//            } catch (Exception e) {
+//                return ResponseEntity.badRequest().body(e.getMessage());
+//            }
+//        }
+//        return ResponseEntity.ok("Generate fake products successfully");
+//    }
 
 }
