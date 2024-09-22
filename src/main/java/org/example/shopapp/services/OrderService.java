@@ -29,30 +29,18 @@ public class OrderService implements OrderServiceImpl {
         // check if user exists
         User user = userRepository.findById(orderRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         assert user != null;
-        Order order = new Order();
 
-        order.setUserId(user);
-        order.setFullName(orderRequest.getFullName());
-        order.setEmail(orderRequest.getEmail());
-        order.setPhoneNumber(orderRequest.getPhoneNumber());
-        order.setAddress(orderRequest.getAddress());
-        order.setNote(orderRequest.getNote());
-        order.setOrderDate(LocalDateTime.now());
+        // map request to entity
+        Order order = modelMapper.map(orderRequest, Order.class);
+
+        // handle logic
+        LocalDateTime now = LocalDateTime.now();
+        order.setOrderDate(now);
         order.setStatus(OrderStatus.PENDING.toString());
-        order.setTotalPrice(orderRequest.getTotalPrice());
-        order.setShippingDate(LocalDateTime.now().plusDays(1));
-        order.setShippingMethod(orderRequest.getShippingMethod());
-        order.setShippingAddress(orderRequest.getShippingAddress());
-        order.setPaymentMethod(orderRequest.getPaymentMethod());
+        order.setShippingDate(now.plusDays(1));
         order.setTrackingNumber(UUID.randomUUID().toString());
-
-        if(orderRequest.getPaymentMethod().equals(PaymentMethod.BANKING.getText())) {
-            order.setPaymentDate(LocalDateTime.now());
-        } else {
-            order.setPaymentDate(null);
-        }
+        order.setPaymentDate(orderRequest.getPaymentMethod().equals(PaymentMethod.BANKING.getText()) ? now : null);
         order.setActive(true);
-
         return orderRepository.save(order);
     }
 
