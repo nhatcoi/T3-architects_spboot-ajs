@@ -13,7 +13,9 @@ import org.example.shopapp.services.serviceImpl.OrderServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,12 +36,11 @@ public class OrderService implements OrderServiceImpl {
         Order order = modelMapper.map(orderRequest, Order.class);
 
         // handle logic
-        LocalDateTime now = LocalDateTime.now();
-        order.setOrderDate(now);
+        order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.PENDING.toString());
-        order.setShippingDate(now.plusDays(1));
+        order.setShippingDate(LocalDate.now().plusDays(1));
         order.setTrackingNumber(UUID.randomUUID().toString());
-        order.setPaymentDate(orderRequest.getPaymentMethod().equals(PaymentMethod.BANKING.getText()) ? now : null);
+        order.setPaymentDate(orderRequest.getPaymentMethod().equals(PaymentMethod.BANKING.getText()) ? LocalDateTime.now() : null);
         order.setActive(true);
         return orderRepository.save(order);
     }
@@ -66,13 +67,29 @@ public class OrderService implements OrderServiceImpl {
     }
 
     @Override
-    public void deleteOrder(Long id) {
-        orderRepository.deleteById(id);
+    public void deleteOrder(Long id) throws DataNotFoundException {
+        Optional<Order> order = orderRepository.findById(id);
+        if(order.isPresent()) {
+            Order orderToDelete = order.get();
+            orderToDelete.setActive(false);
+            orderRepository.save(orderToDelete);
+        } else {
+            throw new DataNotFoundException("Order not found");
+        }
     }
 
     @Override
     public Order getOrderById(Long id) throws DataNotFoundException {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Order not found"));
+    }
+
+    @Override
+    public List<Order> getAllOrdersById(Long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isPresent()) {
+            return orderRepository.findAllByUserId(user.get());
+        }
+        return List.of();
     }
 }

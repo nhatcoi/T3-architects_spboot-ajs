@@ -3,6 +3,7 @@ package org.example.shopapp.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -53,7 +54,7 @@ public class Order {
     private String shippingAddress;
 
     @Column(name = "shipping_date")
-    private LocalDateTime shippingDate;
+    private LocalDate shippingDate;
 
     @Column(name = "tracking_number")
     private String trackingNumber;

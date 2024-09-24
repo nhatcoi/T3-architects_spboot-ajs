@@ -19,17 +19,22 @@ public class OrderResponse {
     @JsonProperty("full_name")
     private String fullName;
 
+    @JsonProperty("email")
     private String email;
 
     @JsonProperty("phone_number")
     private String phoneNumber;
 
+    @JsonProperty("address")
     private String address;
+
+    @JsonProperty("note")
     private String note;
 
     @JsonProperty("order_date")
     private LocalDateTime orderDate;
 
+    @JsonProperty("status")
     private String status;
 
     @JsonProperty("total_price")
@@ -53,5 +58,6 @@ public class OrderResponse {
     @JsonProperty("payment_date")
     private LocalDateTime paymentDate;
 
+    @JsonProperty("active")
     private boolean active;
 }

@@ -8,7 +8,6 @@ import org.example.shopapp.dtos.responses.OrderResponse;
 import org.example.shopapp.entities.Order;
 import org.example.shopapp.services.serviceImpl.OrderServiceImpl;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -46,11 +45,11 @@ public class OrderController {
 
 
     // List all orders of a user
-    @GetMapping("/{user_id}")
-    public ResponseEntity<?> getOrders(@Valid @PathVariable("user_id") Long userId) {
+    @GetMapping("/{order_id}")
+    public ResponseEntity<?> getOrders(@Valid @PathVariable("order_id") Long orderId) {
         try {
             OrderResponse orderResponse = modelMapper
-                    .map(orderService.getOrderById(userId), OrderResponse.class);
+                    .map(orderService.getOrderById(orderId), OrderResponse.class);
             return ResponseEntity.ok().body(orderResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -77,6 +76,20 @@ public class OrderController {
                     .map(orderService.getOrderById(orderId), OrderResponse.class);
             orderService.deleteOrder(orderId);
             return ResponseEntity.ok("Deleted order: " + orderResponse);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/user/{user_id}")
+    public ResponseEntity<?> getAllOrdersById(@PathVariable("user_id") Long userId) {
+        try {
+            List<Order> orders = orderService.getAllOrdersById(userId);
+            List<OrderResponse> orderResponses = orders.stream()
+                    .map(order -> modelMapper.map(order, OrderResponse.class))
+                    .toList();
+            return ResponseEntity.ok().body(orderResponses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -1,10 +1,7 @@
 package org.example.shopapp.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Data
 @Getter
@@ -18,10 +15,17 @@ public class OrderRequest {
 
     @JsonProperty("full_name")
     private String fullName;
+
+    @JsonProperty("order_date")
     private String email;
+
     @JsonProperty("phone_number")
     private String phoneNumber;
+
+    @JsonProperty("address")
     private String address;
+
+    @JsonProperty("note")
     private String note;
 
     @JsonProperty("total_price")
