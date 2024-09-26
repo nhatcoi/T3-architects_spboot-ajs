@@ -1,5 +1,6 @@
 package org.example.shopapp.services;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.shopapp.dtos.OrderDetailRequest;
 import org.example.shopapp.entities.Order;
@@ -23,11 +24,10 @@ public class OrderDetailService implements OrderDetailServiceImpl {
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
 
-
+    @Transactional
     @Override
     public OrderDetail createOrderDetail(OrderDetailRequest orderDetailRequest) throws DataNotFoundException {
         // check if order exists
-
         Order order = orderRepository.findById(orderDetailRequest.getOrderId())
                 .orElseThrow(() -> new DataNotFoundException("Order not found with id: " + orderDetailRequest.getOrderId()));
         // check if product exists
@@ -39,22 +39,30 @@ public class OrderDetailService implements OrderDetailServiceImpl {
                 .product(orderProduct)
                 .price(orderProduct.getPrice())
                 .numberOfProducts(orderDetailRequest.getNumberOfProducts())
-                .totalPrice(orderProduct.getPrice() * orderDetailRequest.getNumberOfProducts())
+                .totalPrice(orderDetailRequest.getTotalPrice())
                 .color(orderDetailRequest.getColor())
                 .build();
         return orderDetailRepository.save(orderDetail);
     }
 
     @Override
+    @Transactional
     public OrderDetail updateOrderDetail(Long orderDetailId, OrderDetailRequest orderDetailRequest) throws DataNotFoundException {
-        OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
+        OrderDetail orderDetail = orderDetailRepository.findWithOrderAndProduct(orderDetailId)
                 .orElseThrow(() -> new DataNotFoundException("Order detail not found with id: " + orderDetailId));
 
-        // mapper request to entity
+        // optimize wth join fetch
+        Order order = orderDetail.getOrder();
+        Product product = orderDetail.getProduct();
         try {
-            orderDetail.setPrice(orderDetailRequest.getPrice());
+            orderDetail.setPrice(product.getPrice());
             orderDetail.setNumberOfProducts(orderDetailRequest.getNumberOfProducts());
-            orderDetail.setTotalPrice(orderDetailRequest.getTotalPrice());
+            orderDetail.setTotalPrice(order.getTotalPrice());
+
+            // nếu có discount
+//            if(...) {
+//                orderDetail.setTotalPrice(...);
+//            }
             orderDetail.setColor(orderDetailRequest.getColor());
         } catch (Exception e) {
             throw new DataNotFoundException("Cannot update order detail with id: " + orderDetailId);

@@ -13,6 +13,12 @@ import java.time.LocalDateTime;
 @Table(name = "order_details")
 @Entity
 @Builder
+@NamedEntityGraph(name = "OrderDetail.withOrderAndProduct",
+        attributeNodes = {
+                @NamedAttributeNode("order"),
+                @NamedAttributeNode("product")
+        })
+
 public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
