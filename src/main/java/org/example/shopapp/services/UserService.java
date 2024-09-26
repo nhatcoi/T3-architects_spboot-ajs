@@ -8,14 +8,18 @@ import org.example.shopapp.exceptions.DataNotFoundException;
 import org.example.shopapp.reposistories.RoleRepository;
 import org.example.shopapp.services.serviceImpl.UserServiceImpl;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.example.shopapp.reposistories.UserRepository;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserServiceImpl {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User createUser(UserDTO userDTO) throws DataNotFoundException {
@@ -41,7 +45,8 @@ public class UserService implements UserServiceImpl {
         if(userDTO.getFacebookId() == 0 || userDTO.getGoogleId() == 0) {
             String password = userDTO.getPassword();
             // security password
-            newUser.setPassword(password);
+            String encodedPassword = passwordEncoder.encode(password);
+            newUser.setPassword(encodedPassword);
         }
 
         return userRepository.save(newUser);
@@ -49,8 +54,12 @@ public class UserService implements UserServiceImpl {
 
 
     @Override
-    public String login(String phoneNumber, String password) {
+    public User login(String phoneNumber, String password) throws DataNotFoundException {
         // security part
-        return null;
+        Optional<User> optionalUser = userRepository.findByPhoneNumber(phoneNumber);
+        if(optionalUser.isEmpty()) {
+            throw new DataNotFoundException("Invalid phoneNumber or password");
+        }
+        return optionalUser.get();
     }
 }
