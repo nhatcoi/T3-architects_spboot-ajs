@@ -37,13 +37,14 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setUserDetailsService(userDetailsService()); // Injects the UserDetailsService defined above to use during authentication.
+        authProvider.setPasswordEncoder(passwordEncoder()); // Injects the PasswordEncoder to validate the password.
         return authProvider;
     }
 
     @Bean
     public AuthenticationManager authenticationManager (AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+        // The AuthenticationManager will rely on the authenticationProvider to verify user credentials.
     }
 }
