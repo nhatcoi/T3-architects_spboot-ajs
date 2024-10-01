@@ -1,0 +1,41 @@
+services:
+  api-shop-service:
+    container_name: ShopApp
+    build:
+        context: ./
+        dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+        - '8080:8080'
+    networks:
+        - backend
+    depends_on:
+        - mysql
+    restart: on-failure
+
+
+  mysql:
+    container_name: shop-mysql-db
+    image: mysql:9.0.1
+    ports:
+      - '3306:3306'
+    env_file:
+      - .env
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - backend
+
+volumes:
+    mysql-data:
+        driver: local
+
+networks:
+    backend:
+        driver: bridge
