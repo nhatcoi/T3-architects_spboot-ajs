@@ -1,14 +1,14 @@
 server:
-    port: 8081
+  port: 8080
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/shopapp}
+    url: ${DATABASE_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    8080: docker
-    username: ${DATABASE_USER:mysql_user}
-    password: ${DATABASE_PASSWORD:mysql_password}
-#    username: root
-#    password:
+    #    8080: docker
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  #    username: root
+  #    password:
   jpa:
     show-sql: true
     hibernate:

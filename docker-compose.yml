@@ -10,31 +10,28 @@ services:
         - '8080:8080'
     networks:
         - backend
-    depends_on:
-        - mysql
-    restart: on-failure
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
 
 
-  mysql:
-    container_name: shop-mysql-db
-    image: mysql:9.0.1
-    ports:
-      - '3306:3306'
-    env_file:
-      - .env
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
-    networks:
-      - backend
+#  mysql:
+#    container_name: shop-mysql-db
+#    image: mysql:8.0.39
+#    ports:
+#      - '3306:3306'
+#    env_file:
+#      - .env
+#    volumes:
+#      - mysql-data:/var/lib/mysql
+#    healthcheck:
+#      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+#      interval: 30s
+#      timeout: 30s
+#      retries: 3
+#    networks:
+#      - backend
 
-volumes:
-    mysql-data:
-        driver: local
 
 networks:
     backend:
