@@ -21,7 +21,6 @@ import java.util.Objects;
 @RequestMapping("api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
-    @Autowired
     private final UserService userService;
 
     @PostMapping("/register")
