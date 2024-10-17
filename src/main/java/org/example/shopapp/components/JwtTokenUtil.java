@@ -20,8 +20,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtTokenUtil {
 
-    @Value("${jwt.expiration)")
-    private long expiration; // save an environment variable
+    @Value("${jwt.expiration}")
+    private long expiration;// save an environment variable
 
     @Value("${jwt.secretKey}")
     private String secretKey;
@@ -31,13 +31,12 @@ public class JwtTokenUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("phoneNumber", user.getPhoneNumber());
         try {
-            String token = Jwts.builder()
+            return Jwts.builder()
                     .setClaims(claims)
                     .setSubject(user.getPhoneNumber())
                     .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
                     .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                     .compact();
-            return token;
         } catch (Exception e) {
             throw new RuntimeException("Cannot generate token");
         }
