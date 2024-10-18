@@ -2,37 +2,38 @@ services:
   api-shop-service:
     container_name: ShopApp
     build:
-        context: ./
-        dockerfile: Dockerfile
+      context: ./
+      dockerfile: Dockerfile
     env_file:
       - .env
     ports:
-        - '8080:8080'
+      - '8080:8080'
     networks:
-        - backend
-#    depends_on:
-#      mysql:
-#        condition: service_healthy
+      - shopapp_backend
+    depends_on:
+      - postgres
 
-
-#  mysql:
-#    container_name: shop-mysql-db
-#    image: mysql:8.0.39
-#    ports:
-#      - '3306:3306'
-#    env_file:
-#      - .env
-#    volumes:
-#      - mysql-data:/var/lib/mysql
-#    healthcheck:
-#      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-#      interval: 30s
-#      timeout: 30s
-#      retries: 3
-#    networks:
-#      - backend
-
+  postgres:
+    container_name: shop-postgres-db
+    image: postgres:13.3
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - shopapp_backend
 
 networks:
-    backend:
-        driver: bridge
+  shopapp_backend:
+    external: true  # Đảm bảo sử dụng mạng đã tạo sẵn
+    driver: bridge
+
+volumes:
+  postgres-data:

@@ -4,8 +4,8 @@ spring:
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/shopapp}
     driver-class-name: org.postgresql.Driver
-    username: ${DATABASE_USER:coinhat}
-    password: ${DATABASE_PASSWORD:}
+    username: ${DATABASE_USER:postgres_user}
+    password: ${DATABASE_PASSWORD:postgres_password}
   jpa:
     show-sql: true
     hibernate:
