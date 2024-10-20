@@ -1,10 +1,21 @@
 server:
-  port: 8084
+  port: 8090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true;
+
+
 spring:
   datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://postgres:5432/shopapp}
-    username: ${POSTGRES_USER:postgres_user}
-    password: ${POSTGRES_PASSWORD:postgres_password}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopapp}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:mysecretpassword}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -28,5 +39,4 @@ jwt:
 #logging:
 #  level:
 #    root: DEBUG
-
 #debug: true
