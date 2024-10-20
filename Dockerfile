@@ -1,8 +1,6 @@
 FROM openjdk:17
-ARG FILE_JAR=target/*.jar
 
-ADD ${FILE_JAR} api-shop-app.jar
-
-ENTRYPOINT ["java", "-jar", "api-shop-app.jar"]
-
-EXPOSE 80
+ARG JAR_FILE=/target/shopapp-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} shopapp.jar
+ENTRYPOINT ["java", "-jar", "shopapp.jar"]
+EXPOSE 8080
